@@ -30,17 +30,19 @@ class CatalogActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Curso
                 )
             }
 
-        val listView = findViewById<ListView>(R.id.list)
-        listView.emptyView = findViewById(R.id.empty_view)
         cursorAdapter = PetCursorAdapter(this@CatalogActivity, null)
-        listView.adapter = cursorAdapter
-
-        listView.setOnItemClickListener { adapterView, view, position, id ->
-            Intent(this@CatalogActivity, EditorActivity::class.java).apply {
-                data = ContentUris.withAppendedId(PetEntry.CONTENT_URI, id)
-                startActivity(this)
+        findViewById<ListView>(R.id.list).apply {
+            emptyView = findViewById(R.id.empty_view)
+            adapter = cursorAdapter
+            setOnItemClickListener { adapterView, view, position, id ->
+                Intent(this@CatalogActivity, EditorActivity::class.java).apply {
+                    data = ContentUris.withAppendedId(PetEntry.CONTENT_URI, id)
+                    startActivity(this)
+                }
             }
         }
+
+
 
         loaderManager.initLoader(0, null, this)
     }
