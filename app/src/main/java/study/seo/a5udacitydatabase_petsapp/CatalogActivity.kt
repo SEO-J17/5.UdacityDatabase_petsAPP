@@ -1,32 +1,21 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package study.seo.a5udacitydatabase_petsapp
 
-import android.annotation.SuppressLint
-import android.content.ContentValues
-import android.content.Intent
+import android.app.LoaderManager
+import android.content.*
+import android.database.Cursor
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
+import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import study.seo.a5udacitydatabase_petsapp.data.PetContract
+import study.seo.a5udacitydatabase_petsapp.data.PetContract.PetEntry
 
-class CatalogActivity : AppCompatActivity() {
+
+class CatalogActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> {
+    private lateinit var cursorAdapter: PetCursorAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_catalog)
@@ -40,49 +29,20 @@ class CatalogActivity : AppCompatActivity() {
                     )
                 )
             }
-        showDatabaseInfo()
-    }
 
-    override fun onStart() {
-        super.onStart()
-    }
+        val listView = findViewById<ListView>(R.id.list)
+        listView.emptyView = findViewById(R.id.empty_view)
+        cursorAdapter = PetCursorAdapter(this@CatalogActivity, null)
+        listView.adapter = cursorAdapter
 
-    @SuppressLint("Recycle", "Range", "SetTextI18n")
-    private fun showDatabaseInfo() {
-        val displayView = findViewById<TextView>(R.id.text_view_pet)
-        val projection = with(PetContract.PetEntry) {
-            arrayOf(
-                _ID,
-                PET_NAME,
-                PET_BREED,
-                PET_GENDER,
-                PET_WEIGHT
-            )
-        }
-        contentResolver.query(
-            PetContract.PetEntry.CONTENT_URI,
-            projection,
-            null,
-            null,
-            null,
-        ).use { cursor ->
-            displayView.text = "table contains ${cursor?.count}"
-            displayView.append(with(PetContract.PetEntry) {
-                "$_ID - $PET_NAME - $PET_BREED - $PET_GENDER - $PET_WEIGHT"
-            })
-            with(PetContract.PetEntry) {
-                while (cursor?.moveToNext() == true) {
-                    displayView.append(
-                        "\n ${cursor.getInt(cursor.getColumnIndex(_ID))} " +
-                                "${cursor.getString(cursor.getColumnIndex(PET_NAME))} " +
-                                "${cursor.getString(cursor.getColumnIndex(PET_BREED))} " +
-                                "${cursor.getInt(cursor.getColumnIndex(PET_GENDER))} " +
-                                "${cursor.getInt(cursor.getColumnIndex(PET_WEIGHT))} "
-                    )
-                }
+        listView.setOnItemClickListener { adapterView, view, position, id ->
+            Intent(this@CatalogActivity, EditorActivity::class.java).apply {
+                data = ContentUris.withAppendedId(PetEntry.CONTENT_URI, id)
+                startActivity(this)
             }
         }
 
+        loaderManager.initLoader(0, null, this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -94,17 +54,19 @@ class CatalogActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.action_insert_dummy_data -> {
                 insertPet()
-                showDatabaseInfo()
                 return true
             }
-            R.id.action_delete_all_entries ->                 // Do nothing for now
+            R.id.action_delete_all_entries -> {
+                deletePets()
                 return true
+            }
+
         }
         return super.onOptionsItemSelected(item)
     }
 
     private fun insertPet() {
-        with(PetContract.PetEntry) {
+        with(PetEntry) {
             contentResolver.insert(CONTENT_URI, ContentValues().apply {
                 put(PET_NAME, "Tto")
                 put(PET_BREED, "Terrier")
@@ -113,4 +75,39 @@ class CatalogActivity : AppCompatActivity() {
             })
         }
     }
+
+    private fun deletePets() {
+        contentResolver.delete(PetEntry.CONTENT_URI, null, null)
+        Log.v("CatalogActivity", "데이터가 삭제 되었습니다!")
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
+        val projection = with(PetEntry) {
+            arrayOf(
+                _ID,
+                PET_NAME,
+                PET_BREED,
+            )
+        }
+        return CursorLoader(
+            this,
+            PetEntry.CONTENT_URI,
+            projection,
+            null,
+            null,
+            null
+        )
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onLoadFinished(loader: Loader<Cursor>?, data: Cursor?) {
+        cursorAdapter.swapCursor(data)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onLoaderReset(loader: Loader<Cursor>?) {
+        cursorAdapter.swapCursor(null)
+    }
+
 }

@@ -11,6 +11,7 @@ import android.widget.TextView
 import study.seo.a5udacitydatabase_petsapp.data.PetContract
 
 class PetCursorAdapter(context: Context?, c: Cursor?) : CursorAdapter(context, c) {
+
     override fun newView(context: Context?, cursor: Cursor?, parent: ViewGroup?): View {
         return LayoutInflater.from(context).inflate(R.layout.list_item, parent, false)
     }

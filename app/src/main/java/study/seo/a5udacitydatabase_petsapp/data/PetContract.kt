@@ -1,5 +1,6 @@
 package study.seo.a5udacitydatabase_petsapp.data
 
+import android.content.ContentResolver
 import android.net.Uri
 import android.provider.BaseColumns
 
@@ -11,8 +12,12 @@ object PetContract {
 
     object PetEntry : BaseColumns {
         val CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS)
-        const val TABLE_NAME = "pets"
+        const val CONTENT_LIST_TYPE =
+            ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHOR + "/" + PATH_PETS
+        const val CONTENT_ITEM_TYPE =
+            ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHOR + "/" + PATH_PETS
 
+        const val TABLE_NAME = "pets"
         const val _ID = BaseColumns._ID     //기본키설정
         const val PET_NAME = "name"
         const val PET_BREED = "breed"
@@ -23,5 +28,10 @@ object PetContract {
         const val GENDER_MALE = 1
         const val GENDER_FEMALE = 2
 
+        fun isValidGender(gender: Int): Boolean {
+            return gender == GENDER_UNKNOWN ||
+                    gender == GENDER_MALE ||
+                    gender == GENDER_FEMALE
+        }
     }
 }
