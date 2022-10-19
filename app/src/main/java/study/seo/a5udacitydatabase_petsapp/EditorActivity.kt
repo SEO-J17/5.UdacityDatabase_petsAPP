@@ -164,7 +164,6 @@ class EditorActivity : AppCompatActivity(),
             val menuItem: MenuItem = menu.findItem(R.id.action_delete)
             menuItem.isVisible = false
         }
-
         return true
     }
 
@@ -274,7 +273,7 @@ class EditorActivity : AppCompatActivity(),
             setPositiveButton(
                 R.string.delete
             ) { dialog, id ->
-                deletePet()
+                deleteAllPet()
             }
             setNegativeButton(
                 R.string.cancel
@@ -285,7 +284,7 @@ class EditorActivity : AppCompatActivity(),
         }
     }
 
-    private fun deletePet() {
+    private fun deleteAllPet() {
         currentPetUri?.let {
             if (contentResolver.delete(it, null, null) == 0) {
                 Toast.makeText(

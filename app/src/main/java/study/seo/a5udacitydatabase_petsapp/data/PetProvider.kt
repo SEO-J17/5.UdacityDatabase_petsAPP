@@ -101,8 +101,8 @@ class PetProvider : ContentProvider() {
 
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
-        return with(dbHelper.writableDatabase) {
-            when (uriMatcher.match(uri)) {
+        with(dbHelper.writableDatabase) {
+            val rowDelete = when (uriMatcher.match(uri)) {
                 PETS -> delete(PetEntry.TABLE_NAME, selection, selectionArgs)
                 PET_ID -> {
                     delete(
@@ -113,6 +113,10 @@ class PetProvider : ContentProvider() {
                 }
                 else -> throw IllegalArgumentException("DB에서 삭제를 실패했습니다. $uri")
             }
+            if (rowDelete != 0) {
+                context?.contentResolver?.notifyChange(uri, null)
+            }
+            return rowDelete
         }
     }
 
